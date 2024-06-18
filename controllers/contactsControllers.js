@@ -36,10 +36,22 @@ const updateContact = async (req, res) => {
   res.status(200).json(updatedContact);
 };
 
+const updateStatusContact = async (req, res) => {
+  const { id } = req.params;
+
+  const updatedContact = await contactsService.updateStatusContact(
+    id,
+    req.body.favorite
+  );
+  if (!updatedContact) throw HttpError(404, 'Resource not found');
+  res.status(200).json(updatedContact);
+};
+
 export default {
   getAllContacts,
   getOneContact: controllerWrapper(getOneContact),
   deleteContact: controllerWrapper(deleteContact),
   createContact,
   updateContact: controllerWrapper(updateContact),
+  updateStatusContact: controllerWrapper(updateStatusContact),
 };
