@@ -6,16 +6,17 @@ import morgan from 'morgan';
 
 import errorHandler from './middlewares/errorMiddleware.js';
 import contactsRouter from './routes/contactsRouter.js';
+import usersRouter from './routes/usersRouter.js';
 
 const app = express();
 const uriDB = process.env.DB_HOST;
-
 const connection = mongoose.connect(uriDB);
 
 connection
   .then(() => console.log('Database connection successful'))
-  .catch(() => {
-    console.error('Error');
+  .catch((err) => {
+    console.log(err.message);
+    console.error("Couldn't connect to the DB");
     process.exit(1);
   });
 
@@ -24,6 +25,7 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/api/contacts', contactsRouter);
+app.use('/api/users', usersRouter);
 
 app.use((_, res) => {
   res.status(404).json({ message: 'Route not found' });

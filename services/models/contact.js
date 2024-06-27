@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 import { handleSaveError } from './hooks.js';
 
 const schema = new mongoose.Schema(
@@ -16,6 +16,10 @@ const schema = new mongoose.Schema(
     favorite: {
       type: Boolean,
       default: false,
+    },
+    owner: {
+      type: Schema.Types.ObjectId,
+      ref: 'user',
     },
   },
   { versionKey: false, timestamps: false }

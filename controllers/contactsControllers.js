@@ -2,56 +2,72 @@ import { controllerWrapper } from '../decorators/controllerWrapper.js';
 import HttpError from '../helpers/HttpError.js';
 import * as contactsService from '../services/contactsServices.js';
 
-const getAllContacts = async (_, res) => {
-  const contacts = await contactsService.getAllContacts();
+const getAllContacts = async (req, res) => {
+  const contacts = await contactsService.getAllContacts({
+    ...req.query,
+    owner: req.user.id,
+  });
   res.status(200).json(contacts);
 };
 
-const getOneContact = async (req, res) => {
+const getOneContact = async (req, res, next) => {
   const { id } = req.params;
 
-  const contact = await contactsService.getOneContact(id);
-  if (!contact) throw HttpError(404, 'Resource not found');
+  const contact = await contactsService.getOneContact({
+    _id: id,
+    owner: req.user.id,
+  });
+
+  if (!contact) next(HttpError(404, 'Resource not found'));
   res.status(200).json(contact);
 };
 
-const deleteContact = async (req, res) => {
+const deleteContact = async (req, res, next) => {
   const { id } = req.params;
 
-  const deletedContact = await contactsService.deleteContact(id);
-  if (!deletedContact) throw HttpError(404, 'Resource not found');
+  const deletedContact = await contactsService.deleteContact({
+    _id: id,
+    owner: req.user.id,
+  });
+  if (!deletedContact) next(HttpError(404, 'Resource not found'));
   res.status(200).json(deletedContact);
 };
 
 const createContact = async (req, res) => {
-  const createdContact = await contactsService.createContact(req.body);
+  const createdContact = await contactsService.createContact({
+    ...req.body,
+    owner: req.user.id,
+  });
   res.status(201).json(createdContact);
 };
 
-const updateContact = async (req, res) => {
+const updateContact = async (req, res, next) => {
   const { id } = req.params;
 
-  const updatedContact = await contactsService.updateContact(id, req.body);
-  if (!updatedContact) throw HttpError(404, 'Resource not found');
+  const updatedContact = await contactsService.updateContact(
+    { _id: id, owner: req.user.id },
+    req.body
+  );
+  if (!updatedContact) next(HttpError(404, 'Resource not found'));
   res.status(200).json(updatedContact);
 };
 
-const updateStatusContact = async (req, res) => {
+const updateStatusContact = async (req, res, next) => {
   const { id } = req.params;
 
   const updatedContact = await contactsService.updateStatusContact(
-    id,
+    { _id: id, owner: req.user.id },
     req.body.favorite
   );
-  if (!updatedContact) throw HttpError(404, 'Resource not found');
+  if (!updatedContact) next(HttpError(404, 'Resource not found'));
   res.status(200).json(updatedContact);
 };
 
 export default {
-  getAllContacts,
+  getAllContacts: controllerWrapper(getAllContacts),
   getOneContact: controllerWrapper(getOneContact),
   deleteContact: controllerWrapper(deleteContact),
-  createContact,
+  createContact: controllerWrapper(createContact),
   updateContact: controllerWrapper(updateContact),
   updateStatusContact: controllerWrapper(updateStatusContact),
 };
